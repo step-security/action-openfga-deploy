@@ -85,6 +85,18 @@ runs:
     - name: Install JQ
       uses: step-security/install-jq-action@fd50feb4e8cd2b0e1e72df42db468e62c71d58f4 #v3.2.0
 
+    - name: Mask secrets
+      shell: bash
+      run: |
+        if [ "${{ inputs.api-token }}" ]
+        then
+          echo "::add-mask::${{ inputs.api-token }}"
+        fi
+        if [ "${{ inputs.client-secret }}" ]
+        then
+          echo "::add-mask::${{ inputs.client-secret }}"
+        fi
+
     - name: Prepare deployment
       id: prepare
       shell: bash
@@ -101,11 +113,6 @@ runs:
           fga_deploy_params+=" --api-scopes=${{ inputs.api-scopes }}"
         fi
 
-        if [ "${{ inputs.api-token }}" ]
-        then
-          fga_deploy_params+=" --api-token=${{ inputs.api-token }}"
-        fi
-
         if [ "${{ inputs.api-token-issuer }}" ]
         then
           fga_deploy_params+=" --api-token-issuer=${{ inputs.api-token-issuer }}"
@@ -119,11 +126,6 @@ runs:
         if [ "${{ inputs.client-id }}" ]
         then
           fga_deploy_params+=" --client-id=${{ inputs.client-id }}"
-        fi
-
-        if [ "${{ inputs.client-secret }}" ]
-        then
-          fga_deploy_params+=" --client-secret=${{ inputs.client-secret }}"
         fi
 
         if [ "${{ inputs.model-file-path }}" ]
@@ -147,6 +149,9 @@ runs:
     - name: Deploy
       id: deploy
       shell: bash
+      env:
+        FGA_API_TOKEN: ${{ inputs.api-token }}
+        FGA_CLIENT_SECRET: ${{ inputs.client-secret }}
       run: |
         fga_output=$(fga model write ${{ steps.prepare.outputs.fga_deploy_params }})
         echo "$fga_output"
