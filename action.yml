@@ -200,9 +200,8 @@ runs:
       env:
         FGA_API_TOKEN: ${{ inputs.api-token }}
         FGA_CLIENT_SECRET: ${{ inputs.client-secret }}
-        FGA_DEPLOY_PARAMS: ${{ steps.prepare.outputs.fga_deploy_params }}
       run: |
-        fga_output=$(fga model write $FGA_DEPLOY_PARAMS)
+        fga_output=$(fga model write ${{ steps.prepare.outputs.fga_deploy_params }})
         echo "$fga_output"
 
         authorization_model_id=$(echo "$fga_output" | jq -r '.authorization_model_id')
