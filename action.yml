@@ -122,60 +122,73 @@ runs:
 
     - name: Mask secrets
       shell: bash
+      env:
+        INPUT_API_TOKEN: ${{ inputs.api-token }}
+        INPUT_CLIENT_SECRET: ${{ inputs.client-secret }}
       run: |
-        if [ "${{ inputs.api-token }}" ]
+        if [ -n "$INPUT_API_TOKEN" ]
         then
-          echo "::add-mask::${{ inputs.api-token }}"
+          echo "::add-mask::$INPUT_API_TOKEN"
         fi
-        if [ "${{ inputs.client-secret }}" ]
+        if [ -n "$INPUT_CLIENT_SECRET" ]
         then
-          echo "::add-mask::${{ inputs.client-secret }}"
+          echo "::add-mask::$INPUT_CLIENT_SECRET"
         fi
 
     - name: Prepare deployment
       id: prepare
       shell: bash
+      env:
+        INPUT_STORE_ID: ${{ inputs.store-id }}
+        INPUT_API_AUDIENCE: ${{ inputs.api-audience }}
+        INPUT_API_SCOPES: ${{ inputs.api-scopes }}
+        INPUT_API_TOKEN_ISSUER: ${{ inputs.api-token-issuer }}
+        INPUT_API_URL: ${{ inputs.api-url }}
+        INPUT_CLIENT_ID: ${{ inputs.client-id }}
+        INPUT_MODEL_FILE_PATH: ${{ inputs.model-file-path }}
+        INPUT_FORMAT: ${{ inputs.format }}
+        INPUT_MODEL: ${{ inputs.model }}
       run: |
-        fga_deploy_params="--store-id=${{ inputs.store-id }}"
+        fga_deploy_params="--store-id=$INPUT_STORE_ID"
 
-        if [ "${{ inputs.api-audience }}" ]
+        if [ -n "$INPUT_API_AUDIENCE" ]
         then
-          fga_deploy_params+=" --api-audience=${{ inputs.api-audience }}"
+          fga_deploy_params+=" --api-audience=$INPUT_API_AUDIENCE"
         fi
 
-        if [ "${{ inputs.api-scopes }}" ]
+        if [ -n "$INPUT_API_SCOPES" ]
         then
-          fga_deploy_params+=" --api-scopes=${{ inputs.api-scopes }}"
+          fga_deploy_params+=" --api-scopes=$INPUT_API_SCOPES"
         fi
 
-        if [ "${{ inputs.api-token-issuer }}" ]
+        if [ -n "$INPUT_API_TOKEN_ISSUER" ]
         then
-          fga_deploy_params+=" --api-token-issuer=${{ inputs.api-token-issuer }}"
+          fga_deploy_params+=" --api-token-issuer=$INPUT_API_TOKEN_ISSUER"
         fi
 
-        if [ "${{ inputs.api-url }}" ]
+        if [ -n "$INPUT_API_URL" ]
         then
-          fga_deploy_params+=" --api-url=${{ inputs.api-url }}"
+          fga_deploy_params+=" --api-url=$INPUT_API_URL"
         fi
 
-        if [ "${{ inputs.client-id }}" ]
+        if [ -n "$INPUT_CLIENT_ID" ]
         then
-          fga_deploy_params+=" --client-id=${{ inputs.client-id }}"
+          fga_deploy_params+=" --client-id=$INPUT_CLIENT_ID"
         fi
 
-        if [ "${{ inputs.model-file-path }}" ]
+        if [ -n "$INPUT_MODEL_FILE_PATH" ]
         then
-          fga_deploy_params+=" --file=${{ inputs.model-file-path }}"
+          fga_deploy_params+=" --file=$INPUT_MODEL_FILE_PATH"
         else
-          fga_deploy_params+=" --format=${{ inputs.format }}"
+          fga_deploy_params+=" --format=$INPUT_FORMAT"
 
-          if [ "${{ inputs.format }}" == "json" ]
+          if [ "$INPUT_FORMAT" == "json" ]
           then
-            read json <<< "${{ inputs.model }}"
-            json=$( echo -n $json | jq -crRsa . )
+            read json <<< "$INPUT_MODEL"
+            json=$( echo -n "$json" | jq -crRsa . )
             fga_deploy_params+=" $json"
           else
-            fga_deploy_params+=" ${{ inputs.model }}"
+            fga_deploy_params+=" $INPUT_MODEL"
           fi
         fi
 
@@ -187,8 +200,9 @@ runs:
       env:
         FGA_API_TOKEN: ${{ inputs.api-token }}
         FGA_CLIENT_SECRET: ${{ inputs.client-secret }}
+        FGA_DEPLOY_PARAMS: ${{ steps.prepare.outputs.fga_deploy_params }}
       run: |
-        fga_output=$(fga model write ${{ steps.prepare.outputs.fga_deploy_params }})
+        fga_output=$(fga model write $FGA_DEPLOY_PARAMS)
         echo "$fga_output"
 
         authorization_model_id=$(echo "$fga_output" | jq -r '.authorization_model_id')
