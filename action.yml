@@ -107,7 +107,7 @@ runs:
           exit 1
         fi
 
-        echo "digest=sha256:${CHECKSUM}" >> "$GITHUB_OUTPUT"
+        echo "digest=${CHECKSUM}" >> "$GITHUB_OUTPUT"
 
     - name: Install OpenFGA CLI
       uses: step-security/action-install-gh-release@671c3094a3d5dcd2870460d0507b99841597d12b #v2.1.0
