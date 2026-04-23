@@ -1,3 +1,5 @@
+[![StepSecurity Maintained Action](https://raw.githubusercontent.com/step-security/maintained-actions-assets/main/assets/maintained-action-banner.png)](https://docs.stepsecurity.io/actions/stepsecurity-maintained-actions)
+
 # OpenFGA Github Action - Deploy
 
 This action can be used to deploy your authorization model to an OpenFGA store.
